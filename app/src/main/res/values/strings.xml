@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">MaFaylz</string>
+    <string name="hint_search_in_files">Search in files</string>
+</resources>
