@@ -16,6 +16,20 @@ import com.emrah.mafaylz.activities.HomeActivity;
 import com.emrah.mafaylz.model.FileSearchResult;
 
 public class NotificationHelper {
+    private static final String CHANNEL_ID = "CHANNEL_100";
+    private static final String CHANNEL_NAME = "PROJECT MYFILES";
+    private static NotificationHelper notificationHelperInstance;
+
+    private NotificationHelper() {
+    }
+
+    public static NotificationHelper getInstance() {
+        if (notificationHelperInstance == null) {
+            notificationHelperInstance = new NotificationHelper();
+        }
+        return notificationHelperInstance;
+    }
+
 
     public void showFileSearchResultNotification(Context context, FileSearchResult fileSearchResult) {
         /*
@@ -23,12 +37,11 @@ public class NotificationHelper {
          * @link https://github.com/projectmatris/antimalwareapp/blob/868beb6bc7322e9ee6334ea3938ef7dcb64ff459/app/src/main/java/tech/projectmatris/antimalwareapp/scanners/ScannerTask.java#L70
          * */
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
-        String CHANNEL_ID = "channel_100";
+
         NotificationCompat.Builder notificationBuilder = new NotificationCompat
                 .Builder(context, CHANNEL_ID);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            String CHANNEL_NAME = "PROJECT MAFAYLZ";
             NotificationChannel mChannel = new NotificationChannel(CHANNEL_ID, CHANNEL_NAME, NotificationManager.IMPORTANCE_HIGH);
             notificationManager.createNotificationChannel(mChannel);
         }
@@ -40,7 +53,7 @@ public class NotificationHelper {
                 .setSmallIcon(R.drawable.ic_launcher_background)
                 .setContentTitle("Test title")
                 .setContentIntent(pIntent)
-                .setContentText("Search Completed in " + " with count: " + fileSearchResult.getFileCount())
+                .setContentText("Search Completed " + " with count: " + fileSearchResult.getFileCount())
                 .build();
 
         notificationManager.notify(100, notification);

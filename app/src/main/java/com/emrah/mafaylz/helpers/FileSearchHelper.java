@@ -49,6 +49,7 @@ public class FileSearchHelper {
     /*
      * I got help from this blog for Rx
      * @link https://blog.danlew.net/2015/07/23/deferring-observable-code-until-subscription-in-rxjava/
+     * @link https://github.com/ReactiveX/RxAndroid
      * */
     public void startSearching(String fileSearchQuery) {
         disposables.add(
@@ -76,10 +77,6 @@ public class FileSearchHelper {
         );
     }
 
-    public void clearDisposables() {
-        disposables.clear();
-    }
-
     private FileSearchResult searchFiles(String query) {
         File[] filesInRoot = Environment.getExternalStorageDirectory().listFiles();
         if (filesInRoot != null) {
@@ -102,5 +99,9 @@ public class FileSearchHelper {
         }
         SystemClock.sleep(10);
         return subFiles;
+    }
+
+    public void clearDisposables() {
+        disposables.clear();
     }
 }

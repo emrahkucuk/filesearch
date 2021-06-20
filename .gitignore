@@ -13,3 +13,5 @@
 .externalNativeBuild
 .cxx
 local.properties
+.idea/sonarIssues.xml
+.idea/sonarlint/issuestore/index.pb

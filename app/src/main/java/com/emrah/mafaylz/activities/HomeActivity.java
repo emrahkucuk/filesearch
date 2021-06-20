@@ -24,12 +24,11 @@ public class HomeActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getWindow().getLayoutInflater());
         setContentView(binding.getRoot());
         setSupportActionBar(binding.toolbar);
-        NotificationHelper notificationHelper = new NotificationHelper();
 
         fileSearchHelper = new FileSearchHelper(fileSearchResult -> {
-            FileSearchHelper.setResult(fileSearchResult);
+            FileSearchHelper.setResult(FileSearchHelper.getResult(SortType.NONE));
             adapter.setResult(FileSearchHelper.getResult(SortType.NONE));
-            notificationHelper.showFileSearchResultNotification(this, fileSearchResult);
+            NotificationHelper.getInstance().showFileSearchResultNotification(this, fileSearchResult);
         });
 
         binding.etSearch.setOnEditorActionListener(new OnSearchEditorAction(
