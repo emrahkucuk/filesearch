@@ -34,12 +34,13 @@ public class FileSearchHelper {
     }
 
     public static FileSearchResult getResult(SortType sortType) {
-        Comparator<FileSearchResultItem> comparator = null;
-        if (sortType == SortType.ALPHABETICAL){
-            comparator = new AlphabeticalComparator();
+        if (result == null) {
+            result = new FileSearchResult(new ArrayList<>(), "");
         }
-        result.getFileSearchResultList().sort(comparator);
-        return result;
+        Comparator<FileSearchResultItem> comparator = sortType.getSortingComparator();
+        List<FileSearchResultItem> resultBeforeSort = new ArrayList<>(result.getFileSearchResultList());
+        resultBeforeSort.sort(Objects.requireNonNull(comparator));
+        return new FileSearchResult(resultBeforeSort, result.getFileSearchQuery());
     }
 
     public static void setResult(FileSearchResult result) {
@@ -91,7 +92,14 @@ public class FileSearchHelper {
         for (File file : listFiles) {
             if (file.isFile()) {
                 if (file.getName().toLowerCase().contains(query.toLowerCase())) {
-                    subFiles.add(new FileSearchResultItem(file.getName(), file.getAbsolutePath()));
+                    subFiles.add(
+                            new FileSearchResultItem(
+                                    file.getName(),
+                                    file.getAbsolutePath(),
+                                    file.lastModified(),
+                                    file.getPath().substring(file.getPath().lastIndexOf("."))
+                            )
+                    );
                 }
             } else {
                 subFiles.addAll(traverseFiles(Objects.requireNonNull(file.listFiles()), query));

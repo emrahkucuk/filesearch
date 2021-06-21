@@ -1,4 +1,4 @@
-package com.emrah.mafaylz.helpers;
+package com.emrah.mafaylz.helpers.sortcomparators;
 
 import com.emrah.mafaylz.model.FileSearchResultItem;
 
