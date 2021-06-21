@@ -29,6 +29,7 @@
             android:id="@+id/et_search"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_margin="@dimen/margin_medium"
             android:hint="@string/hint_search_in_files"
             android:imeOptions="actionSearch"
             android:importantForAutofill="no"
@@ -39,14 +40,27 @@
             android:id="@+id/spn_sortType"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_margin="@dimen/margin_medium"
             android:spinnerMode="dialog"
-            app:layout_constraintTop_toBottomOf="@id/et_search"/>
+            app:layout_constraintTop_toBottomOf="@id/et_search" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rv_results"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="0dp"
+            android:layout_margin="@dimen/margin_medium"
+            app:layout_constraintBottom_toTopOf="@id/btn_save_results"
             app:layout_constraintTop_toBottomOf="@+id/spn_sortType" />
+
+        <Button
+            android:id="@+id/btn_save_results"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/margin_medium"
+            android:text="@string/btn_text_save_results"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            tools:visibility="visible" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

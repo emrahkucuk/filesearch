@@ -8,6 +8,9 @@ import com.emrah.mafaylz.model.FileSearchResult;
 import com.emrah.mafaylz.model.FileSearchResultItem;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -24,6 +27,9 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
 public class FileSearchHelper {
 
     private static final String TAG = "FileSearchHelper";
+    private static final String FILE_SAVE_DIRECTORY = "/fileSearches";
+    private static final String SAVED_FILE_PREFIX = "file_search_";
+    private static final String SAVED_FILE_EXTENSION = ".txt";
 
     private static FileSearchResult result;
     private final FileSearchListener fileSearchListener;
@@ -43,8 +49,9 @@ public class FileSearchHelper {
         return new FileSearchResult(resultBeforeSort, result.getFileSearchQuery());
     }
 
-    public static void setResult(FileSearchResult result) {
+    private void setResult(FileSearchResult result) {
         FileSearchHelper.result = result;
+        fileSearchListener.onSuccess(result);
     }
 
     /*
@@ -62,7 +69,7 @@ public class FileSearchHelper {
 
                             @Override
                             public void onNext(@NonNull FileSearchResult fileSearchResult) {
-                                fileSearchListener.onSuccess(fileSearchResult);
+                                setResult(fileSearchResult);
                             }
 
                             @Override
@@ -72,7 +79,7 @@ public class FileSearchHelper {
 
                             @Override
                             public void onComplete() {
-                                Log.e(TAG, "Search Completed");
+                                Log.d(TAG, "Search Completed");
                             }
                         })
         );
@@ -111,5 +118,65 @@ public class FileSearchHelper {
 
     public void clearDisposables() {
         disposables.clear();
+    }
+
+    /*
+     * @link https://stackoverflow.com/questions/7887078/android-saving-file-to-external-storage
+     * */
+    public void saveSearchResult() {
+        disposables.add(
+                Observable
+                        .defer(() -> Observable.just(doSaveSearchResult()))
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribeWith(new DisposableObserver<Boolean>() {
+
+                            @Override
+                            public void onNext(@NonNull Boolean isSaveSuccessful) {
+                                if (isSaveSuccessful) {
+                                    fileSearchListener.onSaveSuccess();
+                                } else {
+                                    Log.e(TAG, "Save Unsuccessful");
+                                }
+                            }
+
+                            @Override
+                            public void onError(@NonNull Throwable e) {
+                                Log.e(TAG, Objects.requireNonNull(e.getMessage()));
+                            }
+
+                            @Override
+                            public void onComplete() {
+                                Log.d(TAG, "Save Completed");
+                            }
+                        })
+        );
+    }
+
+    private boolean doSaveSearchResult() {
+        File rootDir = Environment.getExternalStorageDirectory();
+        File fileSearchesDirectory = new File(rootDir, FILE_SAVE_DIRECTORY);
+        boolean isDirectoryExists = fileSearchesDirectory.exists();
+        if (!isDirectoryExists) {
+            isDirectoryExists = fileSearchesDirectory.mkdirs();
+        }
+        if (!isDirectoryExists) {
+            Log.e(TAG, "File Search Save Directory does not exists");
+            return false;
+        }
+        long timeStamp = System.currentTimeMillis();
+        String newFileName = SAVED_FILE_PREFIX + timeStamp + SAVED_FILE_EXTENSION;
+        File newFile = new File(fileSearchesDirectory, newFileName);
+
+        try (FileOutputStream fout = new FileOutputStream(newFile); OutputStreamWriter osw = new OutputStreamWriter(fout)) {
+            osw.write(result.getFileSearchQuery() + ":" + result.getFileCount());
+            for (FileSearchResultItem item : result.getFileSearchResultList()) {
+                osw.write("\n" + item.getFileName());
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+        return true;
     }
 }

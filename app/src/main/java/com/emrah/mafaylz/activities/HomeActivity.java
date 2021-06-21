@@ -5,7 +5,10 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
@@ -13,17 +16,23 @@ import com.emrah.mafaylz.R;
 import com.emrah.mafaylz.adapters.ResultsAdapter;
 import com.emrah.mafaylz.databinding.ActivityMainBinding;
 import com.emrah.mafaylz.helpers.FileSearchHelper;
+import com.emrah.mafaylz.helpers.FileSearchListener;
 import com.emrah.mafaylz.helpers.NotificationHelper;
+import com.emrah.mafaylz.helpers.PermissionHelper;
 import com.emrah.mafaylz.helpers.SortType;
+import com.emrah.mafaylz.model.FileSearchResult;
 
 import java.util.Objects;
 
-public class HomeActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
+public class HomeActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener, FileSearchListener {
 
     ActivityMainBinding binding;
     ResultsAdapter adapter;
     FileSearchHelper fileSearchHelper;
     SortType lastSelectedSortType = SortType.NONE;
+
+    private final ActivityResultLauncher<String> saveRequestPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> onSavePermissionGranted());
+    private final ActivityResultLauncher<String> searchRequestPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> onSearchPermissionGranted());
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,14 +41,14 @@ public class HomeActivity extends AppCompatActivity implements AdapterView.OnIte
         setContentView(binding.getRoot());
         setSupportActionBar(binding.toolbar);
 
-        fileSearchHelper = new FileSearchHelper(fileSearchResult -> {
-            FileSearchHelper.setResult(fileSearchResult);
-            Objects.requireNonNull(adapter).setResult(FileSearchHelper.getResult(SortType.NONE));
-            NotificationHelper.getInstance().showFileSearchResultNotification(this, fileSearchResult);
-        });
+        fileSearchHelper = new FileSearchHelper(this);
 
         binding.etSearch.setOnEditorActionListener(new OnSearchEditorAction(
-                query -> fileSearchHelper.startSearching(query)
+                query -> PermissionHelper.getInstance().executeOrAskStoragePermission(
+                        this,
+                        this::onSearchPermissionGranted,
+                        searchRequestPermissionLauncher
+                )
         ));
 
         binding.rvResults.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
@@ -50,6 +59,11 @@ public class HomeActivity extends AppCompatActivity implements AdapterView.OnIte
         sortBySpinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         binding.spnSortType.setAdapter(sortBySpinnerAdapter);
         binding.spnSortType.setOnItemSelectedListener(this);
+
+        binding.btnSaveResults.setOnClickListener(v -> PermissionHelper.getInstance().executeOrAskStoragePermission(
+                this,
+                this::onSavePermissionGranted,
+                saveRequestPermissionLauncher));
     }
 
     @Override
@@ -82,5 +96,27 @@ public class HomeActivity extends AppCompatActivity implements AdapterView.OnIte
         if (fileSearchHelper != null) {
             fileSearchHelper.clearDisposables();
         }
+    }
+
+    @Override
+    public void onSuccess(FileSearchResult fileSearchResult) {
+        Objects.requireNonNull(adapter).setResult(FileSearchHelper.getResult(SortType.NONE));
+        NotificationHelper.getInstance().showFileSearchResultNotification(this, fileSearchResult);
+        int saveResultButtonVisibility = fileSearchResult.getFileSearchResultList().isEmpty() ? View.GONE : View.VISIBLE;
+        Objects.requireNonNull(binding.btnSaveResults).setVisibility(saveResultButtonVisibility);
+    }
+
+    @Override
+    public void onSaveSuccess() {
+        Toast.makeText(this, "Save Successful", Toast.LENGTH_SHORT).show();
+    }
+
+    private void onSavePermissionGranted() {
+        fileSearchHelper.saveSearchResult();
+    }
+
+    private void onSearchPermissionGranted() {
+        String query = Objects.requireNonNull(binding.etSearch.getText().toString());
+        fileSearchHelper.startSearching(query);
     }
 }

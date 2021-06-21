@@ -22,4 +22,5 @@ public class FileSearchResult {
     public String getFileCount() {
         return String.valueOf(fileSearchResultList.size());
     }
+
 }
