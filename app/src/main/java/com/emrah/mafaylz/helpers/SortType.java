@@ -1,5 +1,7 @@
 package com.emrah.mafaylz.helpers;
 
+import androidx.annotation.NonNull;
+
 import com.emrah.mafaylz.helpers.sortcomparators.AlphabeticalComparator;
 import com.emrah.mafaylz.helpers.sortcomparators.ChronologicalComparator;
 import com.emrah.mafaylz.helpers.sortcomparators.ExtensionComparator;
@@ -16,9 +18,10 @@ public enum SortType {
             return new NoOpComparator();
         }
 
+        @NonNull
         @Override
-        int getSortingSpinnerPosition() {
-            return 0;
+        public String toString() {
+            return "Default Sorting";
         }
     }, ALPHABETICAL {
         @Override
@@ -26,9 +29,10 @@ public enum SortType {
             return new AlphabeticalComparator();
         }
 
+        @NonNull
         @Override
-        int getSortingSpinnerPosition() {
-            return 1;
+        public String toString() {
+            return "Sort by File Name";
         }
     }, EXTENSION {
         @Override
@@ -36,9 +40,10 @@ public enum SortType {
             return new ExtensionComparator();
         }
 
+        @NonNull
         @Override
-        int getSortingSpinnerPosition() {
-            return 2;
+        public String toString() {
+            return "Sort by File Extension";
         }
     }, CHRONOLOGICAL {
         @Override
@@ -46,23 +51,13 @@ public enum SortType {
             return new ChronologicalComparator();
         }
 
+        @NonNull
         @Override
-        int getSortingSpinnerPosition() {
-            return 3;
+        public String toString() {
+            return "Sort by Last Modified Date";
         }
     };
 
     abstract Comparator<FileSearchResultItem> getSortingComparator();
-
-    abstract int getSortingSpinnerPosition();
-
-    public static SortType getSortType(int spinnerPosition) {
-        for (SortType sortType : values()) {
-            if (sortType.getSortingSpinnerPosition() == spinnerPosition) {
-                return sortType;
-            }
-        }
-        return SortType.NONE;
-    }
 
 }

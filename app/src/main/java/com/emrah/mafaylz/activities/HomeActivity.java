@@ -12,8 +12,8 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
-import com.emrah.mafaylz.R;
 import com.emrah.mafaylz.adapters.ResultsAdapter;
+import com.emrah.mafaylz.adapters.SortBySpinnerAdapter;
 import com.emrah.mafaylz.databinding.ActivityMainBinding;
 import com.emrah.mafaylz.helpers.FileSearchHelper;
 import com.emrah.mafaylz.helpers.FileSearchListener;
@@ -26,13 +26,15 @@ import java.util.Objects;
 
 public class HomeActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener, FileSearchListener {
 
-    ActivityMainBinding binding;
-    ResultsAdapter adapter;
-    FileSearchHelper fileSearchHelper;
-    SortType lastSelectedSortType = SortType.NONE;
-
     private final ActivityResultLauncher<String> saveRequestPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> onSavePermissionGranted());
     private final ActivityResultLauncher<String> searchRequestPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> onSearchPermissionGranted());
+
+    ActivityMainBinding binding;
+    ResultsAdapter adapter;
+    ArrayAdapter<SortType> sortBySpinnerAdapter;
+
+    FileSearchHelper fileSearchHelper;
+    SortType lastSelectedSortType = SortType.NONE;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,7 +57,7 @@ public class HomeActivity extends AppCompatActivity implements AdapterView.OnIte
         adapter = new ResultsAdapter();
         binding.rvResults.setAdapter(adapter);
 
-        ArrayAdapter<CharSequence> sortBySpinnerAdapter = ArrayAdapter.createFromResource(this, R.array.sort_options, android.R.layout.simple_spinner_item);
+        sortBySpinnerAdapter = new SortBySpinnerAdapter(this);
         sortBySpinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         binding.spnSortType.setAdapter(sortBySpinnerAdapter);
         binding.spnSortType.setOnItemSelectedListener(this);
@@ -78,7 +80,7 @@ public class HomeActivity extends AppCompatActivity implements AdapterView.OnIte
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
         ResultsAdapter resultsAdapter = Objects.requireNonNull(adapter);
-        lastSelectedSortType = SortType.getSortType(position);
+        lastSelectedSortType = sortBySpinnerAdapter.getItem(position);
         resultsAdapter.setResult(FileSearchHelper.getResult(lastSelectedSortType));
     }
 
