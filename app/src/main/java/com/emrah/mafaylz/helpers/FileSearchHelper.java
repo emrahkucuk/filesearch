@@ -1,8 +1,9 @@
 package com.emrah.mafaylz.helpers;
 
 import android.os.Environment;
-import android.os.SystemClock;
 import android.util.Log;
+
+import androidx.annotation.VisibleForTesting;
 
 import com.emrah.mafaylz.model.FileSearchResult;
 import com.emrah.mafaylz.model.FileSearchResultItem;
@@ -49,7 +50,8 @@ public class FileSearchHelper {
         return new FileSearchResult(resultBeforeSort, result.getFileSearchQuery());
     }
 
-    private void setResult(FileSearchResult result) {
+    @VisibleForTesting
+    protected void setResult(FileSearchResult result) {
         FileSearchHelper.result = result;
         fileSearchListener.onSuccess(result);
     }
@@ -112,7 +114,6 @@ public class FileSearchHelper {
                 subFiles.addAll(traverseFiles(Objects.requireNonNull(file.listFiles()), query));
             }
         }
-        SystemClock.sleep(10);
         return subFiles;
     }
 
